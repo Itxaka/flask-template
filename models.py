@@ -7,8 +7,8 @@ from app import db
 
 class User(db.Model, BaseUser):
     username = CharField(unique=True)
-    password = CharField()
-    email = CharField()
+    password = CharField(null=True)
+    email = CharField(null=True)
     active = BooleanField(default=True)
     admin = BooleanField(default=False)
     logged_in = BooleanField(default=False)

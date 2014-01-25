@@ -2,6 +2,8 @@
 from app import app
 from flask import url_for, request, session, jsonify, flash, redirect
 from flask_oauthlib.client import OAuth
+from models import User
+from auth import auth
 
 oauth = OAuth(app)
 
@@ -42,7 +44,15 @@ def authorizedtwitter(resp):
     if resp is None:
         flash('You denied the request to sign in.')
     else:
-        session['twitter_oauth'] = resp
+        session['user'] = resp['screen_name']
+        print resp
+        try:
+            a = User.create(username=resp['screen_name'], password=resp['oauth_token_secret'])
+            a.save()
+        except:
+            pass
+        a = User.select().where(User.username == resp['screen_name']).first()
+        auth.login_user(a)
     return redirect(url_for('index'))
 
 
@@ -61,7 +71,15 @@ def authorizedgoogle(resp):
         )
     session['google_token'] = (resp['access_token'], '')
     me = google.get('userinfo')
-    return jsonify({"data": me.data})
+    session['user'] = me.data['name']
+    try:
+        a = User.create(username=me.data['name'], password=resp['access_token'])
+        a.save()
+    except:
+        pass
+    a = User.select().where(User.username == me.data['name']).first()
+    auth.login_user(a)
+    return redirect(url_for("index"))
 
 
 @app.route('/login/facebook')
@@ -77,11 +95,23 @@ def authorizedfacebook(resp):
             request.args['error_reason'],
             request.args['error_description']
         )
-    session['oauth_token'] = (resp['access_token'], '')
     me = facebook.get('/me')
-    return 'Logged in as id=%s name=%s redirect=%s' % \
-        (me.data['id'], me.data['name'], request.args.get('next'))
+    session['user'] = me.data['name']
+    print resp
+    try:
+        a = User.create(username=me.data['name'], password=resp['access_token'])
+        a.save()
+    except:
+        pass
+    a = User.select().where(User.username == me.data['name']).first()
+    auth.login_user(a)
+    return redirect(url_for("index"))
 
+
+@app.route('/logout/')
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 @google.tokengetter
 def get_google_oauth_token():
