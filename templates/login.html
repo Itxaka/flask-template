@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+    <p><a class="btn btn-google" href="{{ url_for("logingoogle") }}">
+        <i class="icon-googleplus"></i> Login with Google
+    </a></p>
+    <p><a class="btn btn-twitter" href="{{ url_for("logintwitter") }}">
+        <i class="icon-twitter"></i> Login with Twitter
+    </a></p>
+    <p><a class="btn btn-facebook" href="{{ url_for("loginfacebook") }}">
+        <i class="icon-facebook"></i> Login with Facebook
+    </a></p>
+{% endblock %}
